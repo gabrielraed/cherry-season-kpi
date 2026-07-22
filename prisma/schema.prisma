@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  ENCARGADO
+}
+
+enum EntryOrigin {
+  manual
+  import
+}
+
+enum GoalScope {
+  local
+  consolidado
+}
+
+enum ResponsibleTipo {
+  confeccion
+  cumplimiento
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  nombre       String
+  rol          Role     @default(ENCARGADO)
+  cargo        String? // etiqueta libre: "Encargado de marketing", "Contador", etc.
+  createdAt    DateTime @default(now())
+
+  locales        UserLocal[]
+  weeklyEntries  WeeklyEntry[]    @relation("WeeklyEntryCargadoPor")
+  monthlyCloses  MonthlyClose[]   @relation("MonthlyCloseCargadoPor")
+  responsibleFor KpiResponsible[]
+}
+
+model Local {
+  id     String  @id @default(cuid())
+  nombre String
+  activo Boolean @default(true)
+  orden  Int     @default(0)
+
+  usuarios      UserLocal[]
+  weeklyEntries WeeklyEntry[]
+  monthlyCloses MonthlyClose[]
+  goals         KpiGoal[]
+  responsibles  KpiResponsible[]
+}
+
+model UserLocal {
+  userId  String
+  localId String
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  local Local @relation(fields: [localId], references: [id], onDelete: Cascade)
+
+  @@id([userId, localId])
+}
+
+// Catálogo canónico de semanas ISO
+model Week {
+  id        String   @id @default(cuid())
+  isoYear   Int
+  isoWeek   Int
+  startDate DateTime // lunes
+  endDate   DateTime // domingo
+  monthId   String
+
+  month   Month         @relation(fields: [monthId], references: [id])
+  entries WeeklyEntry[]
+
+  @@unique([isoYear, isoWeek])
+}
+
+// Catálogo canónico de meses calendario
+model Month {
+  id    String @id @default(cuid())
+  year  Int
+  month Int // 1-12
+
+  weeks  Week[]
+  closes MonthlyClose[]
+
+  @@unique([year, month])
+}
+
+model WeeklyEntry {
+  id String @id @default(cuid())
+
+  weekId  String
+  localId String
+
+  ventas          Float @default(0)
+  costoInsumos    Float @default(0) // materia prima: café, leche, insumos de producción
+  costoLaboral    Float @default(0)
+  gastoEstructura Float @default(0) // alquiler, servicios, estructura fija
+  comisionesApps  Float @default(0) // apps de delivery
+  marketing       Float @default(0)
+  descartes       Float @default(0) // mermas / producto descartado
+  vajilla         Float @default(0) // roturas / reposición de vajilla
+  cantidadTickets Int   @default(0)
+  ingresoCaja     Float @default(0) // cierre financiero: cobros de la semana
+  egresoCaja      Float @default(0) // cierre financiero: pagos de la semana
+
+  notas  String?
+  origen EntryOrigin @default(manual)
+
+  cargadoPorId String?
+  cargadoAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  week       Week   @relation(fields: [weekId], references: [id])
+  local      Local  @relation(fields: [localId], references: [id])
+  cargadoPor User?  @relation("WeeklyEntryCargadoPor", fields: [cargadoPorId], references: [id])
+
+  @@unique([weekId, localId])
+}
+
+model MonthlyClose {
+  id      String  @id @default(cuid())
+  monthId String
+  localId String? // null = cierre consolidado; con valor = cierre de ese local puntual
+
+  ebitda                   Float @default(0)
+  resultadoOperativo       Float @default(0)
+  resultadoNetoConsolidado Float @default(0)
+  flujoCajaOperativo       Float @default(0)
+  flujoCajaInversion       Float @default(0)
+  flujoCajaFinanciacion    Float @default(0)
+  saldoCajaInicial         Float @default(0)
+  saldoCajaFinal           Float @default(0)
+
+  notas String?
+
+  cargadoPorId String?
+  cargadoAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  month      Month  @relation(fields: [monthId], references: [id])
+  local      Local? @relation(fields: [localId], references: [id])
+  cargadoPor User?  @relation("MonthlyCloseCargadoPor", fields: [cargadoPorId], references: [id])
+
+  @@unique([monthId, localId])
+}
+
+// Metas por KPI para calcular el semáforo (verde/amarillo/rojo)
+model KpiGoal {
+  id      String    @id @default(cuid())
+  kpiCode String
+  scope   GoalScope @default(consolidado)
+  localId String?
+
+  // Si higherIsBetter=true: verde si valor >= verdeThreshold, amarillo si >= amarilloThreshold, si no rojo.
+  // Si higherIsBetter=false: verde si valor <= verdeThreshold, amarillo si <= amarilloThreshold, si no rojo.
+  higherIsBetter    Boolean @default(true)
+  verdeThreshold    Float
+  amarilloThreshold Float
+
+  updatedAt DateTime @updatedAt
+
+  local Local? @relation(fields: [localId], references: [id])
+
+  @@unique([kpiCode, localId])
+}
+
+// Responsables + frecuencia de seguimiento por KPI (punto 4 del plan de acción).
+// Dos roles distintos por KPI: quién lo confecciona (carga el dato) y quién responde por su cumplimiento.
+model KpiResponsible {
+  id         String          @id @default(cuid())
+  kpiCode    String
+  localId    String?
+  tipo       ResponsibleTipo @default(cumplimiento)
+  userId     String
+  frecuencia String          @default("semanal") // 'semanal' | 'mensual'
+
+  local Local? @relation(fields: [localId], references: [id])
+  user  User   @relation(fields: [userId], references: [id])
+
+  @@unique([kpiCode, localId, tipo])
+}

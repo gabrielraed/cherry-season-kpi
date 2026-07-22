@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev",
+      "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
+      "runtimeArgs": [
+        "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+        "--prefix",
+        "C:\\Users\\gabri\\Documents\\cafeteria-kpi-app",
+        "run",
+        "dev"
+      ],
+      "port": 3000
+    }
+  ]
+}

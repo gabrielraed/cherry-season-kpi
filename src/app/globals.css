@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+
+  /* superficies */
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --surface-raised: #ffffff;
+
+  /* tinta */
+  --ink-primary: #0b0b0b;
+  --ink-secondary: #52514e;
+  --ink-muted: #898781;
+  --gridline: #e1e0d9;
+  --border: rgba(11, 11, 11, 0.1);
+
+  /* marca (Cherry Season — no se usa para datos/semáforo) */
+  --brand: #d94f2b;
+  --brand-strong: #6b1f24;
+  --brand-tint: #f6e4de;
+
+  /* semáforo (fijo, nunca temado) */
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
+  --status-good-bg: #e6f6e6;
+  --status-warning-bg: #fef3dc;
+  --status-critical-bg: #fbe7e7;
+
+  /* categórico (comparación entre locales) */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #4a3aa7;
+  --series-4: #1baf7a;
+
+  --success-text: #006300;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --surface-raised: #232322;
+
+    --ink-primary: #ffffff;
+    --ink-secondary: #c3c2b7;
+    --ink-muted: #898781;
+    --gridline: #2c2c2a;
+    --border: rgba(255, 255, 255, 0.1);
+
+    --brand: #e6825f;
+    --brand-strong: #f2ab8f;
+    --brand-tint: #3a211d;
+
+    --status-good: #0ca30c;
+    --status-warning: #fab219;
+    --status-serious: #ec835a;
+    --status-critical: #e66767;
+    --status-good-bg: #0f2a13;
+    --status-warning-bg: #332708;
+    --status-critical-bg: #331414;
+
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #9085e9;
+    --series-4: #199e70;
+
+    --success-text: #0ca30c;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --page: #0d0d0d;
+  --surface: #1a1a19;
+  --surface-raised: #232322;
+
+  --ink-primary: #ffffff;
+  --ink-secondary: #c3c2b7;
+  --ink-muted: #898781;
+  --gridline: #2c2c2a;
+  --border: rgba(255, 255, 255, 0.1);
+
+  --brand: #caa06f;
+  --brand-strong: #e7c69a;
+  --brand-tint: #2a2118;
+
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #e66767;
+  --status-good-bg: #0f2a13;
+  --status-warning-bg: #332708;
+  --status-critical-bg: #331414;
+
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #9085e9;
+  --series-4: #199e70;
+
+  --success-text: #0ca30c;
+}
+
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-ink-primary: var(--ink-primary);
+  --color-ink-secondary: var(--ink-secondary);
+  --color-ink-muted: var(--ink-muted);
+  --color-gridline: var(--gridline);
+  --color-border: var(--border);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-tint: var(--brand-tint);
+  --color-status-good: var(--status-good);
+  --color-status-warning: var(--status-warning);
+  --color-status-serious: var(--status-serious);
+  --color-status-critical: var(--status-critical);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--page);
+  color: var(--ink-primary);
+}
+
+* {
+  border-color: var(--border);
+}
